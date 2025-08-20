@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 @app.route('/api/price-data')
 def price_data():
-    # 模拟数据，部署时可替换为真实数据抓取
     data = {
         "cepea": 535,
         "fob_santos": 490,
