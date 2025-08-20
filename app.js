@@ -1,4 +1,4 @@
-const elements = {
+const el = {
   fobSlider: document.getElementById('fob-slider'),
   fobInput: document.getElementById('fob-input'),
   iceSlider: document.getElementById('ice-slider'),
@@ -18,99 +18,60 @@ const elements = {
   portInput: document.getElementById('port-input'),
 
   lastUpdate: document.getElementById('last-update'),
-
-  resultFobWeighted: document.getElementById('fob-weighted'),
-  resultCifPrice: document.getElementById('cif-price'),
-  resultTotalUsd: document.getElementById('total-cost-usd'),
-  resultTotalCny: document.getElementById('total-cost-cny'),
-  resultDiffPct: document.getElementById('diff-pct'),
+  fobWeighted: document.getElementById('fob-weighted'),
+  cifPrice: document.getElementById('cif-price'),
+  totalUsd: document.getElementById('total-cost-usd'),
+  totalCny: document.getElementById('total-cost-cny'),
+  diffPct: document.getElementById('diff-pct'),
   suggestion: document.getElementById('suggestion'),
 
-  costChartCtx: document.getElementById('cost-chart').getContext('2d')
+  chartCanvas: document.getElementById('cost-chart'),
+  costDetails: document.getElementById('cost-details'),
 };
 
-const zcePrice = 5672;
+const ZCE = 5672;
 
-function syncSliderAndInput(slider, input) {
-  slider.addEventListener('input', ()=> {
-    input.value = slider.value;
-    calculateAndRender();
-  });
-  input.addEventListener('input', () => {
-    slider.value = input.value;
-    calculateAndRender();
-  });
+function sync(slider, input){
+  slider.addEventListener('input', ()=>{input.value = slider.value; render();});
+  input.addEventListener('input', ()=>{slider.value = input.value; render();});
 }
 
-function initSync() {
-  syncSliderAndInput(elements.fobSlider, elements.fobInput);
-  syncSliderAndInput(elements.iceSlider, elements.iceInput);
-  syncSliderAndInput(elements.cepeaSlider, elements.cepeaInput);
-  syncSliderAndInput(elements.freightSlider, elements.freightInput);
-  syncSliderAndInput(elements.exchangeSlider, elements.exchangeInput);
-  syncSliderAndInput(elements.insuranceSlider, elements.insuranceInput);
-  syncSliderAndInput(elements.otherSlider, elements.otherInput);
-  syncSliderAndInput(elements.portSlider, elements.portInput);
-
-  elements.tariffSelect.addEventListener('change', calculateAndRender);
+function initSync(){
+  sync(el.fobSlider, el.fobInput);
+  sync(el.iceSlider, el.iceInput);
+  sync(el.cepeaSlider, el.cepeaInput);
+  sync(el.freightSlider, el.freightInput);
+  sync(el.exchangeSlider, el.exchangeInput);
+  sync(el.insuranceSlider, el.insuranceInput);
+  sync(el.otherSlider, el.otherInput);
+  sync(el.portSlider, el.portInput);
+  el.tariffSelect.addEventListener('change', render);
 }
 
-function weightedFOB(cepea, fob, ice) {
-  const iceUsdTon = ice * 22.0462;
-  return fob*0.4 + cepea*0.35 + iceUsdTon*0.25;
+function weightedFOB(cepea, fob, iceCents){
+  const iceUsdTon = Number(iceCents) * 22.0462;
+  return Number(fob)*0.4 + Number(cepea)*0.35 + iceUsdTon*0.25;
 }
 
-let chartInstance = null;
-
-function drawChart(data) {
-  const labels = ['配额内进口', '配额外进口'];
-  const datasets = [
-    {label: 'FOB', data: [data.fob, data.fob], backgroundColor:'#61a0a8'},
-    {label: '海运', data: [data.freight, data.freight], backgroundColor:'#d48265'},
-    {label: '保险费', data: [data.insurance, data.insurance], backgroundColor:'#91c7ae'},
-    {label: '其他费用', data: [data.other, data.other], backgroundColor:'#749f83'},
-    {label: '港口杂费', data: [data.port, data.port], backgroundColor:'#ca8622'},
-    {label: '关税', data: [data.tariffIn, data.tariffOut], backgroundColor:'#bda29a'},
-    {label: '增值税', data: [data.vatIn, data.vatOut], backgroundColor:'#6e7074'}
-  ];
-
-  if(chartInstance) chartInstance.destroy();
-
-  chartInstance = new Chart(elements.costChartCtx, {
-    type: 'bar',
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      },
-      plugins: {
-        tooltip: { mode: 'index', intersect: false },
-        legend: { position: 'top' }
-      }
-    }
-  });
-}
-
-function calculateAndRender() {
-  const cepea = parseFloat(elements.cepeaInput.value);
-  const fob = parseFloat(elements.fobInput.value);
-  const ice = parseFloat(elements.iceInput.value);
-  const freight = parseFloat(elements.freightInput.value);
-  const exchange = parseFloat(elements.exchangeInput.value);
-  const tariffPerc = parseFloat(elements.tariffSelect.value);
-  const insurance = parseFloat(elements.insuranceInput.value);
-  const other = parseFloat(elements.otherInput.value);
-  const port = parseFloat(elements.portInput.value);
+function calc() {
+  const cepea = parseFloat(el.cepeaInput.value);
+  const fob = parseFloat(el.fobInput.value);
+  const ice = parseFloat(el.iceInput.value);
+  const freight = parseFloat(el.freightInput.value);
+  const ex = parseFloat(el.exchangeInput.value);
+  const tariffSel = parseFloat(el.tariffSelect.value);
+  const insurance = parseFloat(el.insuranceInput.value);
+  const other = parseFloat(el.otherInput.value);
+  const port = parseFloat(el.portInput.value);
 
   const fobW = weightedFOB(cepea, fob, ice);
-  const cifPrice = fobW + freight + insurance + other;
+  const cif = fobW + freight + insurance + other;
 
-  const tariffIn = cifPrice * (tariffPerc / 100);
-  const tariffOut = cifPrice * 0.5; // 配额外关税固定50%
+  const tariffIn = cif * (tariffSel/100);
+  const tariffOut = cif * 0.5;
 
-  const preVatIn = cifPrice + tariffIn + port;
-  const preVatOut = cifPrice + tariffOut + port;
+  const preVatIn = cif + tariffIn + port;
+  const preVatOut = cif + tariffOut + port;
 
   const vatIn = preVatIn * 0.13;
   const vatOut = preVatOut * 0.13;
@@ -118,94 +79,163 @@ function calculateAndRender() {
   const totalUsdIn = preVatIn + vatIn;
   const totalUsdOut = preVatOut + vatOut;
 
-  const totalCnyIn = totalUsdIn * exchange;
-  const totalCnyOut = totalUsdOut * exchange;
+  const totalCnyIn = totalUsdIn * ex;
+  const diffPctIn = ((totalCnyIn - ZCE) / ZCE) * 100;
 
-  const diffPctIn = ((totalCnyIn - zcePrice) / zcePrice) * 100;
+  return {
+    cepea, fob, ice, freight, insurance, other, port, ex, tariffSel,
+    fobW, cif,
+    tariffIn, tariffOut, preVatIn, preVatOut, vatIn, vatOut,
+    totalUsdIn, totalUsdOut, totalCnyIn, diffPctIn
+  };
+}
 
-  elements.resultFobWeighted.textContent = `$${fobW.toFixed(2)}`;
-  elements.resultCifPrice.textContent = `$${cifPrice.toFixed(2)}`;
-  elements.resultTotalUsd.textContent = `$${totalUsdIn.toFixed(2)}`;
-  elements.resultTotalCny.textContent = `¥${totalCnyIn.toFixed(0)}`;
-  elements.resultDiffPct.textContent = `${diffPctIn.toFixed(1)}%`;
+function renderPanels(m){
+  el.fobWeighted.textContent = `$${m.fobW.toFixed(2)}`;
+  el.cifPrice.textContent = `$${m.cif.toFixed(2)}`;
+  el.totalUsd.textContent = `$${m.totalUsdIn.toFixed(2)}`;
+  el.totalCny.textContent = `¥${m.totalCnyIn.toFixed(0)}`;
+  el.diffPct.textContent = `${m.diffPctIn.toFixed(1)}%`;
 
-  if(diffPctIn <= 5) {
-    elements.suggestion.textContent = '可以进口，价差在合理范围内 (+ ' + diffPctIn.toFixed(1) + '%)';
-    elements.suggestion.style.color = '#2a9d8f';
-  } else if(diffPctIn <= 10) {
-    elements.suggestion.textContent = '谨慎进口，价差较大 (+ ' + diffPctIn.toFixed(1) + '%)';
-    elements.suggestion.style.color = '#f4a261';
-  } else {
-    elements.suggestion.textContent = '暂缓进口，价差过大 (+ ' + diffPctIn.toFixed(1) + '%)';
-    elements.suggestion.style.color = '#e76f51';
+  if(m.diffPctIn <= 5){
+    el.suggestion.textContent = `可以进口，价差在合理范围内 ( + ${m.diffPctIn.toFixed(1)}% )`;
+    el.suggestion.style.background = '#dff4eb';
+    el.suggestion.style.color = '#0e7b63';
+  }else if(m.diffPctIn <= 10){
+    el.suggestion.textContent = `谨慎进口，价差较大 ( + ${m.diffPctIn.toFixed(1)}% )`;
+    el.suggestion.style.background = '#fff4e6';
+    el.suggestion.style.color = '#a35a00';
+  }else{
+    el.suggestion.textContent = `暂缓进口，价差过大 ( + ${m.diffPctIn.toFixed(1)}% )`;
+    el.suggestion.style.background = '#ffe9e6';
+    el.suggestion.style.color = '#bf2e2e';
   }
 
-  drawChart({
-    fob: fobW,
-    freight,
-    insurance,
-    other,
-    port,
-    tariffIn,
-    tariffOut,
-    vatIn,
-    vatOut
+  const html = `
+    <div class="cost-row"><span>加权平均FOB:</span><span>$${m.fobW.toFixed(2)}</span></div>
+    <div class="cost-row"><span>海运费:</span><span>$${m.freight.toFixed(2)}</span></div>
+    <div class="cost-row"><span>保险费:</span><span>$${m.insurance.toFixed(2)}</span></div>
+    <div class="cost-row"><span>其他费用:</span><span>$${m.other.toFixed(2)}</span></div>
+    <div class="cost-row cif-summary"><span>CIF小计:</span><span>$${m.cif.toFixed(2)}</span></div>
+    <div class="cost-row"><span>关税:</span><span>$${m.tariffSel===15?m.tariffIn.toFixed(2):m.tariffOut.toFixed(2)}</span></div>
+    <div class="cost-row"><span>港口清关费:</span><span>$${m.port.toFixed(2)}</span></div>
+    <div class="cost-row"><span>增值税 (13%):</span><span>$${(m.tariffSel===15?m.vatIn:m.vatOut).toFixed(2)}</span></div>
+    <div class="cost-row final-cost"><span>最终成本:</span><span>$${(m.tariffSel===15?m.totalUsdIn:m.totalUsdOut).toFixed(2)}</span></div>
+  `;
+  el.costDetails.innerHTML = html;
+}
+
+let chartInstance = null;
+function drawStackedChart(m){
+  const ctx = el.chartCanvas.getContext('2d');
+
+  // 三种情景的成本模拟计算
+  const optimistic = {
+    fob: m.fobW - 30,
+    freight: m.freight - 15,
+    insurance: Math.max(3, m.insurance - 1),
+    other: Math.max(5, m.other -5),
+    port: m.port,
+  };
+  const base = {
+    fob: m.fobW,
+    freight: m.freight,
+    insurance: m.insurance,
+    other: m.other,
+    port: m.port,
+  };
+  const pessimistic = {
+    fob: m.fobW + 40,
+    freight: m.freight + 20,
+    insurance: m.insurance + 1,
+    other: m.other + 10,
+    port: m.port,
+  };
+
+  function pack(c){
+    const cif = c.fob + c.freight + c.insurance + c.other;
+    const tariff = cif * (m.tariffSel / 100);
+    const preVat = cif + tariff + c.port;
+    const vat = preVat * 0.13;
+    return { cif, tariff, vat, total: (preVat + vat) * m.ex };
+  }
+
+  const dOpt = pack(optimistic), dBase = pack(base), dPes = pack(pessimistic);
+
+  const labels = ['乐观', '基准', '悲观'];
+
+  const dataSets = [
+    { label: 'FOB价', data: [dOpt.cif - (dOpt.tariff+dOpt.vat+dOpt.cif-cOpt.cif), dBase.cif - (dBase.tariff + dBase.vat), dPes.cif - (dPes.tariff + dPes.vat)], backgroundColor: '#7fc8d6', stack: 'stack1'},
+    { label: '运费', data: [optimistic.freight * m.ex, base.freight * m.ex, pessimistic.freight * m.ex], backgroundColor: '#e1696a', stack: 'stack1' },
+    { label: '保险', data: [optimistic.insurance * m.ex, base.insurance * m.ex, pessimistic.insurance * m.ex], backgroundColor: '#a0d468', stack: 'stack1' },
+    { label: '其他费', data: [optimistic.other * m.ex, base.other * m.ex, pessimistic.other * m.ex], backgroundColor: '#749f83', stack: 'stack1' },
+    { label: '关税', data: [dOpt.tariff * m.ex, dBase.tariff * m.ex, dPes.tariff * m.ex], backgroundColor: '#bda29a', stack: 'stack1' },
+    { label: '增值税', data: [dOpt.vat * m.ex, dBase.vat * m.ex, dPes.vat * m.ex], backgroundColor: '#6e7074', stack: 'stack1' },
+  ];
+
+  if(chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: dataSets,
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { mode: 'index', intersect: false },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, title: { display: true, text: '价格（元/吨）' } },
+      }
+    },
   });
 }
 
-async function fetchLatestData() {
+function render() {
+  const m = calc();
+  renderPanels(m);
+  drawStackedChart(m);
+}
+
+async function fetchLatest() {
   try {
     const res = await fetch('/api/price-data');
     const data = await res.json();
-    elements.lastUpdate.textContent = `最后更新：${data.lastUpdate}`;
-
-    // 更新输入框值
-    elements.cepeaInput.value = data.cepea;
-    elements.cepeaSlider.value = data.cepea;
-
-    elements.fobInput.value = data.fob_santos;
-    elements.fobSlider.value = data.fob_santos;
-
-    elements.iceInput.value = data.ice_no11_cents;
-    elements.iceSlider.value = data.ice_no11_cents;
-
-    elements.exchangeInput.value = data.exchange_rate;
-    elements.exchangeSlider.value = data.exchange_rate;
-
-    calculateAndRender();
-  } catch(err){
-    console.error(err);
-    elements.lastUpdate.textContent = '最后更新：数据请求失败';
+    el.lastUpdate.textContent = `最后更新：${data.lastUpdate}`;
+    el.cepeaInput.value = data.cepea; el.cepeaSlider.value = data.cepea;
+    el.fobInput.value = data.fob_santos; el.fobSlider.value = data.fob_santos;
+    el.iceInput.value = data.ice_no11_cents; el.iceSlider.value = data.ice_no11_cents;
+    el.exchangeInput.value = data.exchange_rate; el.exchangeSlider.value = data.exchange_rate;
+    render();
+  } catch(e) {
+    console.error(e);
+    el.lastUpdate.textContent = '最后更新：数据请求失败';
+    render();
   }
 }
 
 function setup() {
   initSync();
-  fetchLatestData();
-}
-
-function initSync() {
-  syncSliderAndInput(elements.fobSlider, elements.fobInput);
-  syncSliderAndInput(elements.iceSlider, elements.iceInput);
-  syncSliderAndInput(elements.cepeaSlider, elements.cepeaInput);
-  syncSliderAndInput(elements.freightSlider, elements.freightInput);
-  syncSliderAndInput(elements.exchangeSlider, elements.exchangeInput);
-  syncSliderAndInput(elements.insuranceSlider, elements.insuranceInput);
-  syncSliderAndInput(elements.otherSlider, elements.otherInput);
-  syncSliderAndInput(elements.portSlider, elements.portInput);
-
-  elements.tariffSelect.addEventListener('change', calculateAndRender);
-}
-
-function syncSliderAndInput(slider, input) {
-  slider.oninput = () => {
-    input.value = slider.value;
-    calculateAndRender();
-  };
-  input.oninput = () => {
-    slider.value = input.value;
-    calculateAndRender();
-  };
+  fetchLatest();
 }
 
 window.onload = setup;
+
+function initSync() {
+  ['fobSlider','fobInput','iceSlider','iceInput','cepeaSlider','cepeaInput','freightSlider','freightInput','exchangeSlider','exchangeInput','insuranceSlider','insuranceInput','otherSlider','otherInput','portSlider','portInput']
+  .forEach(id => {
+    const suffix = id.includes('Slider') ? 'Input' : 'Slider';
+    const element1 = document.getElementById(id);
+    const element2 = document.getElementById(id.replace(/Slider|Input/, suffix));
+    element1.addEventListener('input', () => {
+      element2.value = element1.value;
+      render();
+    });
+  });
+  
+  el.tariffSelect.addEventListener('change', render);
+}
