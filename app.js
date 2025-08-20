@@ -1,51 +1,57 @@
 const el = {
-  fobSlider: document.getElementById('fob-slider'),
-  fobInput: document.getElementById('fob-input'),
-  iceSlider: document.getElementById('ice-slider'),
-  iceInput: document.getElementById('ice-input'),
-  cepeaSlider: document.getElementById('cepea-slider'),
-  cepeaInput: document.getElementById('cepea-input'),
-  freightSlider: document.getElementById('freight-slider'),
-  freightInput: document.getElementById('freight-input'),
-  exchangeSlider: document.getElementById('exchange-slider'),
-  exchangeInput: document.getElementById('exchange-input'),
-  tariffSelect: document.getElementById('tariff-select'),
-  insuranceSlider: document.getElementById('insurance-slider'),
-  insuranceInput: document.getElementById('insurance-input'),
-  otherSlider: document.getElementById('other-slider'),
-  otherInput: document.getElementById('other-input'),
-  portSlider: document.getElementById('port-slider'),
-  portInput: document.getElementById('port-input'),
+  fobSlider: document.getElementById('fobSlider'),
+  fobInput: document.getElementById('fobInput'),
+  iceSlider: document.getElementById('iceSlider'),
+  iceInput: document.getElementById('iceInput'),
+  cepeaSlider: document.getElementById('cepeaSlider'),
+  cepeaInput: document.getElementById('cepeaInput'),
+  freightSlider: document.getElementById('freightSlider'),
+  freightInput: document.getElementById('freightInput'),
+  exchangeSlider: document.getElementById('exchangeSlider'),
+  exchangeInput: document.getElementById('exchangeInput'),
+  tariffSelect: document.getElementById('tariffSelect'),
+  insuranceSlider: document.getElementById('insuranceSlider'),
+  insuranceInput: document.getElementById('insuranceInput'),
+  otherSlider: document.getElementById('otherSlider'),
+  otherInput: document.getElementById('otherInput'),
+  portSlider: document.getElementById('portSlider'),
+  portInput: document.getElementById('portInput'),
 
   lastUpdate: document.getElementById('last-update'),
-  fobWeighted: document.getElementById('fob-weighted'),
-  cifPrice: document.getElementById('cif-price'),
-  totalUsd: document.getElementById('total-cost-usd'),
-  totalCny: document.getElementById('total-cost-cny'),
-  diffPct: document.getElementById('diff-pct'),
+  fobWeighted: document.getElementById('fobWeighted'),
+  cifPrice: document.getElementById('cifPrice'),
+  totalUsd: document.getElementById('totalUsd'),
+  totalCny: document.getElementById('totalCny'),
+  diffPct: document.getElementById('diffPct'),
   suggestion: document.getElementById('suggestion'),
 
-  chartCanvas: document.getElementById('cost-chart'),
-  costDetails: document.getElementById('cost-details'),
+  chartCanvas: document.getElementById('costChart'),
+  costDetails: document.getElementById('costDetails'),
 };
 
 const ZCE = 5672;
 
 function sync(slider, input){
+  if (!slider || !input) return;
   slider.addEventListener('input', ()=>{input.value = slider.value; render();});
   input.addEventListener('input', ()=>{slider.value = input.value; render();});
 }
 
 function initSync(){
-  sync(el.fobSlider, el.fobInput);
-  sync(el.iceSlider, el.iceInput);
-  sync(el.cepeaSlider, el.cepeaInput);
-  sync(el.freightSlider, el.freightInput);
-  sync(el.exchangeSlider, el.exchangeInput);
-  sync(el.insuranceSlider, el.insuranceInput);
-  sync(el.otherSlider, el.otherInput);
-  sync(el.portSlider, el.portInput);
-  el.tariffSelect.addEventListener('change', render);
+  [
+    ['fobSlider','fobInput'],
+    ['iceSlider','iceInput'],
+    ['cepeaSlider','cepeaInput'],
+    ['freightSlider','freightInput'],
+    ['exchangeSlider','exchangeInput'],
+    ['insuranceSlider','insuranceInput'],
+    ['otherSlider','otherInput'],
+    ['portSlider','portInput'],
+  ].forEach(([sid,iid]) => {
+    sync(document.getElementById(sid), document.getElementById(iid));
+  });
+  const tariffSel = document.getElementById('tariffSelect');
+  if(tariffSel) tariffSel.addEventListener('change', render);
 }
 
 function weightedFOB(cepea, fob, iceCents){
@@ -126,6 +132,7 @@ function renderPanels(m){
 }
 
 let chartInstance = null;
+
 function drawStackedChart(m){
   const ctx = el.chartCanvas.getContext('2d');
 
@@ -165,15 +172,15 @@ function drawStackedChart(m){
   const labels = ['乐观', '基准', '悲观'];
 
   const dataSets = [
-    { label: 'FOB价', data: [dOpt.cif - (dOpt.tariff+dOpt.vat+dOpt.cif-cOpt.cif), dBase.cif - (dBase.tariff + dBase.vat), dPes.cif - (dPes.tariff + dPes.vat)], backgroundColor: '#7fc8d6', stack: 'stack1'},
-    { label: '运费', data: [optimistic.freight * m.ex, base.freight * m.ex, pessimistic.freight * m.ex], backgroundColor: '#e1696a', stack: 'stack1' },
-    { label: '保险', data: [optimistic.insurance * m.ex, base.insurance * m.ex, pessimistic.insurance * m.ex], backgroundColor: '#a0d468', stack: 'stack1' },
-    { label: '其他费', data: [optimistic.other * m.ex, base.other * m.ex, pessimistic.other * m.ex], backgroundColor: '#749f83', stack: 'stack1' },
-    { label: '关税', data: [dOpt.tariff * m.ex, dBase.tariff * m.ex, dPes.tariff * m.ex], backgroundColor: '#bda29a', stack: 'stack1' },
-    { label: '增值税', data: [dOpt.vat * m.ex, dBase.vat * m.ex, dPes.vat * m.ex], backgroundColor: '#6e7074', stack: 'stack1' },
+    { label: 'FOB价', data: [dOpt.fob, dBase.fob, dPes.fob].map(v=>v*m.ex), backgroundColor: '#7fc8d6', stack: 'stack1' },
+    { label: '运费', data: [dOpt.freight, dBase.freight, dPes.freight].map(v=>v*m.ex), backgroundColor: '#e1696a', stack: 'stack1' },
+    { label: '保险', data: [dOpt.insurance, dBase.insurance, dPes.insurance].map(v=>v*m.ex), backgroundColor: '#a0d468', stack: 'stack1' },
+    { label: '其他费', data: [dOpt.other, dBase.other, dPes.other].map(v=>v*m.ex), backgroundColor: '#749f83', stack: 'stack1' },
+    { label: '关税', data: [dOpt.tariff, dBase.tariff, dPes.tariff].map(v=>v*m.ex), backgroundColor: '#bda29a', stack: 'stack1' },
+    { label: '增值税', data: [dOpt.vat, dBase.vat, dPes.vat].map(v=>v*m.ex), backgroundColor: '#6e7074', stack: 'stack1' },
   ];
 
-  if(chartInstance) chartInstance.destroy();
+  if (chartInstance) chartInstance.destroy();
 
   chartInstance = new Chart(ctx, {
     type: 'bar',
@@ -189,9 +196,13 @@ function drawStackedChart(m){
       },
       scales: {
         x: { stacked: true },
-        y: { stacked: true, beginAtZero: true, title: { display: true, text: '价格（元/吨）' } },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          title: { display: true, text: '价格（元/吨）' }
+        },
       }
-    },
+    }
   });
 }
 
@@ -211,7 +222,7 @@ async function fetchLatest() {
     el.iceInput.value = data.ice_no11_cents; el.iceSlider.value = data.ice_no11_cents;
     el.exchangeInput.value = data.exchange_rate; el.exchangeSlider.value = data.exchange_rate;
     render();
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     el.lastUpdate.textContent = '最后更新：数据请求失败';
     render();
@@ -226,16 +237,31 @@ function setup() {
 window.onload = setup;
 
 function initSync() {
-  ['fobSlider','fobInput','iceSlider','iceInput','cepeaSlider','cepeaInput','freightSlider','freightInput','exchangeSlider','exchangeInput','insuranceSlider','insuranceInput','otherSlider','otherInput','portSlider','portInput']
-  .forEach(id => {
-    const suffix = id.includes('Slider') ? 'Input' : 'Slider';
-    const element1 = document.getElementById(id);
-    const element2 = document.getElementById(id.replace(/Slider|Input/, suffix));
-    element1.addEventListener('input', () => {
-      element2.value = element1.value;
-      render();
-    });
+  [
+    ['fobSlider', 'fobInput'],
+    ['iceSlider', 'iceInput'],
+    ['cepeaSlider', 'cepeaInput'],
+    ['freightSlider', 'freightInput'],
+    ['exchangeSlider', 'exchangeInput'],
+    ['insuranceSlider', 'insuranceInput'],
+    ['otherSlider', 'otherInput'],
+    ['portSlider', 'portInput'],
+  ].forEach(([sid, iid]) => {
+    sync(document.getElementById(sid), document.getElementById(iid));
   });
-  
-  el.tariffSelect.addEventListener('change', render);
+
+  const tariffSel = document.getElementById('tariffSelect');
+  if (tariffSel) tariffSel.addEventListener('change', render);
+}
+
+function sync(slider, input) {
+  if (!slider || !input) return;
+  slider.addEventListener('input', () => {
+    input.value = slider.value;
+    render();
+  });
+  input.addEventListener('input', () => {
+    slider.value = input.value;
+    render();
+  });
 }
