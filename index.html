@@ -21,46 +21,46 @@
       <div class="field">
         <label>FOB Santos价格 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="fob-slider" min="400" max="600" value="490" />
-          <input type="number" id="fob-input" min="400" max="600" value="490" />
+          <input type="range" id="fobSlider" min="400" max="600" value="490" />
+          <input type="number" id="fobInput" min="400" max="600" value="490" />
         </div>
       </div>
 
       <div class="field">
         <label>ICE No.11期货价格 (美分/磅)</label>
         <div class="input-row">
-          <input type="range" id="ice-slider" min="12" max="25" step="0.1" value="16.3" />
-          <input type="number" id="ice-input" min="12" max="25" step="0.1" value="16.3" />
+          <input type="range" id="iceSlider" min="12" max="25" step="0.1" value="16.3" />
+          <input type="number" id="iceInput" min="12" max="25" step="0.1" value="16.3" />
         </div>
       </div>
 
       <div class="field">
         <label>CEPEA价格 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="cepea-slider" min="400" max="700" value="535" />
-          <input type="number" id="cepea-input" min="400" max="700" value="535" />
+          <input type="range" id="cepeaSlider" min="400" max="700" value="535" />
+          <input type="number" id="cepeaInput" min="400" max="700" value="535" />
         </div>
       </div>
 
       <div class="field">
         <label>海运费 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="freight-slider" min="40" max="100" value="65" />
-          <input type="number" id="freight-input" min="40" max="100" value="65" />
+          <input type="range" id="freightSlider" min="40" max="100" value="65" />
+          <input type="number" id="freightInput" min="40" max="100" value="65" />
         </div>
       </div>
 
       <div class="field">
         <label>汇率 (USD→CNY)</label>
         <div class="input-row">
-          <input type="range" id="exchange-slider" min="6.5" max="8" step="0.01" value="7.2" />
-          <input type="number" id="exchange-input" min="6.5" max="8" step="0.01" value="7.2" />
+          <input type="range" id="exchangeSlider" min="6.5" max="8" step="0.01" value="7.2" />
+          <input type="number" id="exchangeInput" min="6.5" max="8" step="0.01" value="7.2" />
         </div>
       </div>
 
       <div class="field">
         <label>关税率 (%)</label>
-        <select id="tariff-select">
+        <select id="tariffSelect">
           <option value="15">配额内 15%</option>
           <option value="50">配额外 50%</option>
         </select>
@@ -69,24 +69,24 @@
       <div class="field">
         <label>保险费 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="insurance-slider" min="3" max="10" value="5" />
-          <input type="number" id="insurance-input" min="3" max="10" value="5" />
+          <input type="range" id="insuranceSlider" min="3" max="10" value="5" />
+          <input type="number" id="insuranceInput" min="3" max="10" value="5" />
         </div>
       </div>
 
       <div class="field">
         <label>其他费用 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="other-slider" min="5" max="50" value="10" />
-          <input type="number" id="other-input" min="5" max="50" value="10" />
+          <input type="range" id="otherSlider" min="5" max="50" value="10" />
+          <input type="number" id="otherInput" min="5" max="50" value="10" />
         </div>
       </div>
 
       <div class="field">
         <label>港口杂费 (美元/吨)</label>
         <div class="input-row">
-          <input type="range" id="port-slider" min="20" max="50" value="35" />
-          <input type="number" id="port-input" min="20" max="50" value="35" />
+          <input type="range" id="portSlider" min="20" max="50" value="35" />
+          <input type="number" id="portInput" min="20" max="50" value="35" />
         </div>
       </div>
     </section>
@@ -98,19 +98,19 @@
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-title">加权平均FOB价格</div>
-          <div class="kpi-value" id="fob-weighted">$-</div>
+          <div class="kpi-value" id="fobWeighted">$-</div>
         </div>
         <div class="kpi">
           <div class="kpi-title">CIF价格</div>
-          <div class="kpi-value" id="cif-price">$-</div>
+          <div class="kpi-value" id="cifPrice">$-</div>
         </div>
         <div class="kpi">
           <div class="kpi-title">最终进口成本（美元）</div>
-          <div class="kpi-value" id="total-cost-usd">$-</div>
+          <div class="kpi-value" id="totalUsd">$-</div>
         </div>
         <div class="kpi">
           <div class="kpi-title">最终进口成本（人民币）</div>
-          <div class="kpi-value" id="total-cost-cny">¥-</div>
+          <div class="kpi-value" id="totalCny">¥-</div>
         </div>
         <div class="kpi">
           <div class="kpi-title">郑州期货价格</div>
@@ -118,17 +118,17 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">价格差异</div>
-          <div class="kpi-value" id="diff-pct">-</div>
+          <div class="kpi-value" id="diffPct">-</div>
         </div>
       </div>
 
       <div id="suggestion" class="suggestion">-</div>
 
       <h3 class="section-title">成本构成分析</h3>
-      <canvas id="cost-chart" height="260"></canvas>
+      <canvas id="costChart" height="260"></canvas>
 
       <h3 class="section-title">成本明细</h3>
-      <div id="cost-details" class="cost-details-card"></div>
+      <div id="costDetails" class="cost-details-card"></div>
     </section>
   </main>
 
