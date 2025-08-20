@@ -3,43 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>巴西45号白糖进口中国CIF价格动态评估计算器</title>
+  <title>巴西白糖CIF价格评估系统</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>巴西45号白糖进口中国CIF价格动态评估计算器</h1>
+  <header class="header">
+    <h1>巴西45号白糖进口中国CIF价格评估系统</h1>
+    <p class="subtitle">基于CEPEA、ICE和郑州商品交易所数据的实时价格评估</p>
     <div id="last-update">最后更新：--</div>
   </header>
-  <main>
-    <section class="input-panel">
+  <main class="main-grid">
+    <section class="input-panel card">
       <h2>参数设置</h2>
-      <label>FOB Santos价格(美元/吨): <input type="number" id="fob-santos" value="490" min="400" max="600" /></label>
-      <label>CEPEA价格(美元/吨): <input type="number" id="cepea-price" value="535" min="400" max="700" /></label>
-      <label>ICE No.11期货价格 (美分/磅): <input type="number" id="ice-no11" value="16.3" step="0.01" min="12" max="25" /></label>
-      <label>海运费(美元/吨): <input type="number" id="freight" value="65" min="40" max="100" /></label>
-      <label>保险费(美元/吨): <input type="number" id="insurance" value="5" min="3" max="10" /></label>
-      <label>其他费用(美元/吨): <input type="number" id="other-costs" value="10" min="5" max="50" /></label>
-      <label>港口杂费(美元/吨): <input type="number" id="port-cost" value="35" min="20" max="50" /></label>
-      <label>关税率(%): 
-        <select id="tariff-rate">
+      <div class="input-group">
+        <label>FOB Santos价格 (美元/吨)</label>
+        <input type="range" id="fob-slider" min="400" max="600" value="490" />
+        <input type="number" id="fob-input" min="400" max="600" value="490" />
+      </div>
+      <div class="input-group">
+        <label>ICE No.11期货价格 (美分/磅)</label>
+        <input type="range" id="ice-slider" min="12" max="25" step="0.1" value="16.3" />
+        <input type="number" id="ice-input" min="12" max="25" step="0.1" value="16.3" />
+      </div>
+      <div class="input-group">
+        <label>CEPEA价格 (美元/吨)</label>
+        <input type="range" id="cepea-slider" min="400" max="700" value="535" />
+        <input type="number" id="cepea-input" min="400" max="700" value="535" />
+      </div>
+      <div class="input-group">
+        <label>海运费 (美元/吨)</label>
+        <input type="range" id="freight-slider" min="40" max="100" value="65" />
+        <input type="number" id="freight-input" min="40" max="100" value="65" />
+      </div>
+      <div class="input-group">
+        <label>汇率 (USD→CNY)</label>
+        <input type="range" id="exchange-slider" min="6.5" max="8" step="0.01" value="7.2" />
+        <input type="number" id="exchange-input" min="6.5" max="8" step="0.01" value="7.2" />
+      </div>
+      <div class="input-group">
+        <label>关税率 (%)</label>
+        <select id="tariff-select">
           <option value="15">配额内 15%</option>
           <option value="50">配额外 50%</option>
         </select>
-      </label>
-      <label>增值税率(%): <input type="number" id="vat-rate" value="13" min="0" max="20" /></label>
-      <label>汇率(USD→CNY): <input type="number" id="exchange-rate" value="7.2" step="0.01" min="6.5" max="8" /></label>
-      <button id="recalc-btn">重新计算</button>
+      </div>
+      <div class="input-group">
+        <label>保险费 (美元/吨)</label>
+        <input type="range" id="insurance-slider" min="3" max="10" value="5" />
+        <input type="number" id="insurance-input" min="3" max="10" value="5" />
+      </div>
+      <div class="input-group">
+        <label>其他费用 (美元/吨)</label>
+        <input type="range" id="other-slider" min="5" max="50" value="10" />
+        <input type="number" id="other-input" min="5" max="50" value="10" />
+      </div>
+      <div class="input-group">
+        <label>港口杂费 (美元/吨)</label>
+        <input type="range" id="port-slider" min="20" max="50" value="35" />
+        <input type="number" id="port-input" min="20" max="50" value="35" />
+      </div>
     </section>
-    <section class="result-panel">
+    <section class="result-panel card">
       <h2>计算结果</h2>
-      <p>加权FOB价格: <span id="fob-weighted">-</span> USD/吨</p>
-      <p>CIF价格: <span id="cif-price">-</span> USD/吨</p>
-      <p>最终进口成本: <span id="total-cost-usd">-</span> USD/吨 / <span id="total-cost-cny">-</span> 元/吨</p>
-      <p>与郑州期货价格(5672元/吨)差异: <span id="diff-cny">-</span> 元/吨 (<span id="diff-pct">-</span> %)</p>
-      <p>进口建议: <span id="arbitrage-suggestion">-</span></p>
+      <div class="result-row">
+        <div><strong>加权平均FOB价格</strong><p id="fob-weighted">$-</p></div>
+        <div><strong>CIF价格</strong><p id="cif-price">$-</p></div>
+      </div>
+      <div class="result-row">
+        <div><strong>最终进口成本（美元）</strong><p id="total-cost-usd">$-</p></div>
+        <div><strong>最终进口成本（人民币）</strong><p id="total-cost-cny">¥-</p></div>
+      </div>
+      <div class="result-row">
+        <div><strong>郑州期货价格</strong><p>¥5672/吨</p></div>
+        <div><strong>价格差异</strong><p id="diff-pct">-</p></div>
+      </div>
+      <div id="suggestion" class="suggestion"></div>
+      <canvas id="cost-chart"></canvas>
     </section>
   </main>
+  <script src="assets/chart.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
