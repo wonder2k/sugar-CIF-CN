@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>巴西45号白糖进口中国CIF价格动态评估计算器</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>巴西45号白糖进口中国CIF价格动态评估计算器</h1>
+    <div id="last-update">最后更新：--</div>
+  </header>
+  <main>
+    <section class="input-panel">
+      <h2>参数设置</h2>
+      <label>FOB Santos价格(美元/吨): <input type="number" id="fob-santos" value="490" min="400" max="600" /></label>
+      <label>CEPEA价格(美元/吨): <input type="number" id="cepea-price" value="535" min="400" max="700" /></label>
+      <label>ICE No.11期货价格 (美分/磅): <input type="number" id="ice-no11" value="16.3" step="0.01" min="12" max="25" /></label>
+      <label>海运费(美元/吨): <input type="number" id="freight" value="65" min="40" max="100" /></label>
+      <label>保险费(美元/吨): <input type="number" id="insurance" value="5" min="3" max="10" /></label>
+      <label>其他费用(美元/吨): <input type="number" id="other-costs" value="10" min="5" max="50" /></label>
+      <label>港口杂费(美元/吨): <input type="number" id="port-cost" value="35" min="20" max="50" /></label>
+      <label>关税率(%): 
+        <select id="tariff-rate">
+          <option value="15">配额内 15%</option>
+          <option value="50">配额外 50%</option>
+        </select>
+      </label>
+      <label>增值税率(%): <input type="number" id="vat-rate" value="13" min="0" max="20" /></label>
+      <label>汇率(USD→CNY): <input type="number" id="exchange-rate" value="7.2" step="0.01" min="6.5" max="8" /></label>
+      <button id="recalc-btn">重新计算</button>
+    </section>
+    <section class="result-panel">
+      <h2>计算结果</h2>
+      <p>加权FOB价格: <span id="fob-weighted">-</span> USD/吨</p>
+      <p>CIF价格: <span id="cif-price">-</span> USD/吨</p>
+      <p>最终进口成本: <span id="total-cost-usd">-</span> USD/吨 / <span id="total-cost-cny">-</span> 元/吨</p>
+      <p>与郑州期货价格(5672元/吨)差异: <span id="diff-cny">-</span> 元/吨 (<span id="diff-pct">-</span> %)</p>
+      <p>进口建议: <span id="arbitrage-suggestion">-</span></p>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
