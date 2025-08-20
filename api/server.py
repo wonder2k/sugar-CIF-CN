@@ -52,6 +52,7 @@ def price_data():
         "cepea": cache['cepea'] or 535.0,  # 默认备用值
         "fob_santos": cache['fob_santos'] or 490.0,
         "ice_no11_cents": cache['ice_no11_cents'] or 16.30,
+        "exchange_rate": 7.2,   # 必须有这一行，值不能为None
         "lastUpdate": cache['last_update'].strftime('%Y-%m-%d %H:%M:%S') if cache['last_update'] else None
     })
 
